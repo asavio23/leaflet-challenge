@@ -1,20 +1,20 @@
 // Create the tile layer
 var streetmap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 });
 
 // Initialize LayerGroups
 var layers = {
-  Quakes: new L.LayerGroup()
+Quakes: new L.LayerGroup()
 };
 
 // Create the map
 var map = L.map("map", {
-  center: [0.000, 0.000],
-  zoom: 2.5,
-  layers: [
-    layers.Quakes
-  ]
+center: [0.000, 0.000],
+zoom: 2.5,
+layers: [
+  layers.Quakes
+]
 });
 
 // Add streetmap tile layer to the map
@@ -22,16 +22,55 @@ streetmap.addTo(map);
 
 // Create  overlays object to add to the layer control
 var overlays = {
-  "Earthquakes": layers.Quakes
+"Earthquakes": layers.Quakes
 };
+
 // Create a control for layers, and add overlays to it
 L.control.layers(null, overlays).addTo(map);
 
 // Perform call to retrieve the earthquake data for the month in json format
 d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson").then(function(EarthquakeData) {
 
-    console.log(EarthquakeData);
+  console.log(EarthquakeData);
 
-    let EarthquakeList = EarthquakeData.features;
+  let EarthquakeList = EarthquakeData.features;
 
-    console.log(EarthquakeList[0]);
+  console.log(EarthquakeList[0]);
+
+  for (var i = 0; i < EarthquakeList.length; i++) {
+
+      var Earthquake = EarthquakeList[i];
+
+      var depth = Earthquake.geometry.coordinates[2];
+
+      // Anything deeper than 300, make a solid circle
+      depthFill = depth/300 + .1;
+
+      if (depthFill > 1) {depthFill = 1};
+
+      // Create function to add color range depending on depth
+      function getColor(depth) {
+          return depth > 500 ? "#355E3B" :
+                 depth > 400  ? "#228B22" :
+                 depth > 300  ? "#5F8575" :
+                 depth > 200  ? "#50C878" :
+                 depth > 100   ? "#7CFC00" :
+                            "#90EE90";
+      }
+      
+      var EarthquakeSize = (Earthquake.properties.mag * 50000)*Math.cos((Earthquake.geometry.coordinates[1]/180)*Math.PI)
+
+      var newQuake = L.circle([Earthquake.geometry.coordinates[1],Earthquake.geometry.coordinates[0]], {
+          color: 'black',
+          weight: 1,
+          fillColor: getColor(Earthquake.geometry.coordinates[2]),
+          fillOpacity: .65,
+          radius: EarthquakeSize
+      });
+
+      newQuake.addTo(layers.Quakes);
+
+      newQuake.bindPopup(" Magnitude: " + Earthquake.properties.mag + 
+                          "<br> Depth: " + depth +
+                          "<br> Place: " + Earthquake.properties.place);
+  };
