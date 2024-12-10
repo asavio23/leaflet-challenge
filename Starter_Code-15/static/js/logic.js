@@ -74,3 +74,25 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
                           "<br> Depth: " + depth +
                           "<br> Place: " + Earthquake.properties.place);
   };
+
+  // Create a legend to display information about our map.
+  var info = L.control({
+    position: "bottomright"
+});
+
+// When the layer control is added, insert a div with the class of "legend".
+info.onAdd = function() {
+    var div = L.DomUtil.create('div', 'info legend');
+    grades = [0, 100, 200, 300, 400, 500];
+    labels = ["#355E3B","#228B22","#5F8575","#50C878","#7CFC00","#90EE90"];
+
+    for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+            '<i style="background:' + labels[i] + '"></i> ' +
+            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');  
+    }
+    return div;
+};
+// Add the info legend to the map.
+info.addTo(map);
+});
