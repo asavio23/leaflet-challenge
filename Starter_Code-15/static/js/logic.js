@@ -24,3 +24,14 @@ streetmap.addTo(map);
 var overlays = {
   "Earthquakes": layers.Quakes
 };
+// Create a control for layers, and add overlays to it
+L.control.layers(null, overlays).addTo(map);
+
+// Perform call to retrieve the earthquake data for the month in json format
+d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson").then(function(EarthquakeData) {
+
+    console.log(EarthquakeData);
+
+    let EarthquakeList = EarthquakeData.features;
+
+    console.log(EarthquakeList[0]);
